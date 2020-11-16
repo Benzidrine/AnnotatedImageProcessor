@@ -7,7 +7,6 @@ from xml.etree import ElementTree
 # The purpose of this is to process license plate number photos and their annotations into a coherently numbered set of image files and matching annotation
 # ------------------
 
-
 # Initial number if no images found
 currentStartingNumber = 0  
 
@@ -55,9 +54,3 @@ for filename in os.listdir(rawDirectory):
                     break
             if annotationFound == True:
                 break
-
-
-
-
-
-
