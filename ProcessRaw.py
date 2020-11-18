@@ -2,6 +2,8 @@ import os
 import CommonLibrary
 from PIL import Image
 from xml.etree import ElementTree
+from ImageDeleter import ImageDeleter
+from ImageChecker import ImageChecker
 
 # ------------------
 # The purpose of this is to process license plate number photos and their annotations into a coherently numbered set of image files and matching annotation
@@ -11,8 +13,12 @@ from xml.etree import ElementTree
 currentStartingNumber = 0  
 
 # Find the latest number
-directory = 'Images'
-annotsDirectory = 'Annots'
+directory = 'Processed/Images'
+annotsDirectory = 'Processed/Annots'
+
+# Loop through raw images to save as jpeg in images directory with numbered filename
+rawDirectory = 'RawImages'
+rawAnnotsDirectory = 'RawAnnots'
 
 for filename in os.listdir(directory):
     if filename.endswith(".jpg"):
@@ -21,9 +27,14 @@ for filename in os.listdir(directory):
         if (trySuccess and (tempNumber > currentStartingNumber)):
             currentStartingNumber = tempNumber
 
-# Loop through raw images to save as jpeg in images directory with numbered filename
-rawDirectory = 'RawImages'
-rawAnnotsDirectory = 'RawAnnots'
+# Delete those images with no annotation
+imageDeleter = ImageDeleter()
+imageDeleter.DeleteUnannotated(rawDirectory + '/',rawAnnotsDirectory + '/')
+
+# Check a few images 
+imageChecker = ImageChecker()
+imageChecker.Check_images(rawDirectory + '/',rawAnnotsDirectory + '/')
+
 for filename in os.listdir(rawDirectory):
     if filename.endswith(".jpg") or filename.endswith(".png"):
         currentStartingNumber += 1
@@ -54,3 +65,7 @@ for filename in os.listdir(rawDirectory):
                     break
             if annotationFound == True:
                 break
+
+# Delete those images with no annotation
+imageDeleter = ImageDeleter()
+imageDeleter.ClearOutImagesAndAnnotations('RawImages/','RawAnnots/')
