@@ -53,7 +53,7 @@ class YoloImageProcessor:
                             with open(os.path.join(outputAnnotationDirectory,str(currentStartingNumber)) + '.txt', 'w+') as f1:
                                 for box in boxes:
                                     coorX, coorY, coorW, coorH = cls.coordinateCvt2YOLO(tempImage.size, box)
-                                    f1.write("0 " + str(coorX) + " " + str(coorY) + " " + str(coorW) + " " + str(coorH))
+                                    f1.write("0 " + str(coorX) + " " + str(coorY) + " " + str(coorW) + " " + str(coorH) + "\n")
                             break
                     if annotationFound == True:
                         break
@@ -91,7 +91,7 @@ class YoloImageProcessor:
         """
         # Initial number if no images found
         currentStartingNumber = 0  
-        for filename in os.listdir(directory):
+        for filename in os.listdir(inputImageDirectory):
             if filename.endswith(".jpg"):
                 tempFilename = filename.replace(".jpg","")
                 tempNumber, trySuccess = CommonLibrary.IntTryParse(tempFilename)
