@@ -5,6 +5,7 @@ from numpy import zeros
 from numpy import asarray
 from matplotlib import pyplot
 from PIL import Image
+import cv2
 import os
 
 """
@@ -59,10 +60,53 @@ class ImageChecker():
             pyplot.imshow(masks[:, :, 0], cmap='gray', alpha=0.75)
             pyplot.show()
 
+    # Find duplicate images
+    @classmethod
+    def FindDuplicateImages(cls, imageDirectory: str):
+        # Find all images
+        for filename in listdir(imageDirectory):
+            imageHashOne = cls.CreateImageHashProcess(imageDirectory, filename) 
+            if imageHashOne is not None:
+                for filenameTwo in listdir(imageDirectory):
+                    # Check it isn't the same file
+                    if filename != filenameTwo:
+                        if imageHashOne == cls.CreateImageHashProcess(imageDirectory, filenameTwo):
+                            print("duplicate found:","First Image:", filename, "SecondImage:", filenameTwo)
+
+    @staticmethod
+    def CreateImageHashProcess(imageDirectory: str, filename: str):
+        """
+        Store the code pattern that creates an Image Hash
+        """
+        # Check if image
+        if '.jpg' in filename:
+            image = cv2.imread(os.path.join(imageDirectory,filename))
+            # If the image is None then we could not load it from disk (so skip it)
+            if image is not None:
+                # Convert the image to grayscale and compute the hash
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                imageHash = ImageChecker.DifferenceHash(image)
+                return imageHash
+        return None
+    
+    @staticmethod
+    def DifferenceHash(image: Image, hashSize: int = 8):
+        """
+        Create a difference hash for a given image
+        """
+        # resize the input image, adding a single column (width) so we
+        # can compute the horizontal gradient
+        resized = cv2.resize(image, (hashSize + 1, hashSize))
+        # compute the (relative) horizontal gradient between adjacent
+        # column pixels
+        diff = resized[:, 1:] > resized[:, :-1]
+        # convert the difference image to a hash
+        return sum([2 ** i for (i, v) in enumerate(diff.flatten()) if v])
+
  
     # extract bounding boxes from an annotation file
     @staticmethod
-    def extract_boxes(filename):
+    def extract_boxes(filename: str):
         # load and parse the file
         tree = ElementTree.parse(filename)
         # get the root of the document
@@ -80,6 +124,3 @@ class ImageChecker():
         width = int(root.find('.//size/width').text)
         height = int(root.find('.//size/height').text)
         return boxes, width, height
- 
-imageChecker = ImageChecker()
-imageChecker.Check_images('ImageChecker\\Images','ImageChecker\\Annots')
