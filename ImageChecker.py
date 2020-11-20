@@ -1,5 +1,6 @@
 # plot one photograph and mask
 from os import listdir
+import typing
 from xml.etree import ElementTree
 from numpy import zeros
 from numpy import asarray
@@ -45,17 +46,17 @@ class ImageChecker():
                 continue
             boxes, width, height = cls.extract_boxes(annotations_dir + '/' + correctAnnotFileName)
             # create one array for all masks, each on a different channel
-            masks = zeros([height, width, len(boxes)], dtype='uint8')
+            masks = zeros([height, width, 1], dtype='uint8')
             for i in range(len(boxes)):
                 box = boxes[i]
                 row_s, row_e = box[1], box[3]
                 col_s, col_e = box[0], box[2]
-                masks[row_s:row_e, col_s:col_e, i] = 1
+                masks[row_s:row_e, col_s:col_e, 0] = 1
             # plot image
             image = Image.open(images_dir + '/' + filename)
             pyplot.imshow(image)
             # plot mask
-            pyplot.imshow(masks[:, :, 0], cmap='gray', alpha=0.5)
+            pyplot.imshow(masks[:, :, :],  alpha=0.5)
             pyplot.show()
             numberOfImagesChecked += 1
             if numberOfImagesChecked >= numToCheck:
@@ -64,6 +65,7 @@ class ImageChecker():
     # Find duplicate images
     @classmethod
     def FindDuplicateImages(cls, imageDirectory: str):
+        duplicatedImages: typing.List[str] = []
         # Find all images
         for filename in listdir(imageDirectory):
             imageHashOne = cls.CreateImageHashProcess(imageDirectory, filename) 
@@ -73,6 +75,24 @@ class ImageChecker():
                     if filename != filenameTwo:
                         if imageHashOne == cls.CreateImageHashProcess(imageDirectory, filenameTwo):
                             print("duplicate found:","First Image:", filename, "SecondImage:", filenameTwo)
+                            duplicatedImages.append(filename)
+        return duplicatedImages
+
+    # Find duplicate images
+    @classmethod
+    def FindDuplicateImagesTwo(cls, imageDirectory: str, targetDirectory: str):
+        duplicatedImages: typing.List[str] = []
+        # Find all images
+        for filename in listdir(imageDirectory):
+            imageHashOne = cls.CreateImageHashProcess(imageDirectory, filename) 
+            if imageHashOne is not None:
+                for filenameTwo in listdir(targetDirectory):
+                    # Check it isn't the same file
+                    if filename != filenameTwo:
+                        if imageHashOne == cls.CreateImageHashProcess(targetDirectory, filenameTwo):
+                            print("duplicate found:","First Image:", filename, "SecondImage:", filenameTwo)
+                            duplicatedImages.append(filename)
+        return duplicatedImages
 
     @staticmethod
     def CreateImageHashProcess(imageDirectory: str, filename: str):

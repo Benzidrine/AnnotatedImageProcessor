@@ -1,4 +1,5 @@
+from ImageDeleter import ImageDeleter
 from ImageChecker import ImageChecker
 
-imageChecker = ImageChecker()
-imageChecker.FindDuplicateImages("ImageChecker\Images")
+imageDeleter = ImageDeleter()
+imageDeleter.DeleteDuplicateImages("Processed\Images")
